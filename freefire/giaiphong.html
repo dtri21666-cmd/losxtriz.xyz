@@ -126,7 +126,6 @@
     <span>Sơ đồ bracket đấu loại trực tiếp</span>
   </div>
   <div class="actions">
-    <button id="reshuffleBtn">🔀 Random lại</button>
     <span class="live-badge">LIVE DRAW</span>
   </div>
 </div>
@@ -411,13 +410,6 @@ function drawConnectors(){
 }
 
 window.addEventListener('resize', ()=>drawConnectors());
-
-document.getElementById('reshuffleBtn').addEventListener('click', ()=>{
-  if(confirm('Random lại toàn bộ sơ đồ bracket? Kết quả bốc thăm hiện tại sẽ bị thay thế.')){
-    buildBracket(true);
-    render();
-  }
-});
 
 buildBracket(false);
 render();
