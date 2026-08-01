@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FF SOLO SHOWDOWN — Sơ Đồ Bracket</title>
+<style>
+  :root{
+    --bg:#12151b;
+    --card:#1b1f27;
+    --line:#3a3f48;
+    --flame-1:#ff6a1a;
+    --flame-2:#ffb238;
+    --text:#e9edf3;
+    --muted:#8b93a0;
+    --live:#e02b2b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:
+      radial-gradient(circle at 2px 2px, rgba(255,255,255,.035) 1px, transparent 1px) 0 0/18px 18px,
+      var(--bg);
+    color:var(--text);
+    font-family:"Segoe UI","Inter",system-ui,-apple-system,sans-serif;
+    padding:26px 18px 60px;
+  }
+  .topbar{
+    max-width:1600px; margin:0 auto 22px; display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:14px;
+  }
+  .brand h1{
+    font-size:20px; margin:0; font-weight:900; letter-spacing:.5px;
+    background:linear-gradient(90deg,#fff,var(--flame-2) 60%,var(--flame-1));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .brand span{font-size:11px; color:var(--muted); letter-spacing:.16em; text-transform:uppercase;}
+  .actions{display:flex; gap:10px; align-items:center;}
+  button{
+    cursor:pointer; border:none; border-radius:8px; padding:10px 18px;
+    font-weight:800; font-size:13px; letter-spacing:.02em;
+    background:linear-gradient(90deg, var(--flame-1), var(--flame-2)); color:#1a0f08;
+  }
+  button:hover{filter:brightness(1.08);}
+  button:active{transform:scale(.97);}
+  .live-badge{
+    background:var(--live); color:#fff; font-size:11px; font-weight:800; letter-spacing:.08em;
+    padding:6px 12px; border-radius:6px; display:flex; align-items:center; gap:6px;
+  }
+  .live-badge::before{content:""; width:7px; height:7px; border-radius:50%; background:#fff; animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  .scroll-wrap{max-width:1600px; margin:0 auto; overflow-x:auto; padding-bottom:14px;}
+  .bracket-outer{position:relative;}
+  svg.connectors{position:absolute; top:0; left:0; pointer-events:none;}
+  .bracket{display:flex; gap:100px; position:relative; z-index:1;}
+
+  .round-col{display:flex; flex-direction:column; min-width:300px;}
+  .round-header{
+    text-align:center; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted); font-weight:800; padding-bottom:14px; margin-bottom:10px;
+    border-bottom:1px solid var(--line);
+  }
+  .matches{display:flex; flex-direction:column; justify-content:center; gap:34px; flex:1;}
+
+  .match-card{
+    background:var(--card); border-radius:12px; padding:14px 16px 14px 18px;
+    position:relative; overflow:hidden; height:82px;
+    display:flex; flex-direction:column; justify-content:center; gap:9px;
+  }
+  .match-card::before{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
+    background:linear-gradient(180deg, var(--flame-1), var(--flame-2));
+  }
+  .m-tag{font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:600;}
+  .m-duo{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .m-name{
+    font-size:14.5px; font-weight:800; flex:1; min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .m-name.right{text-align:right;}
+  .m-name.empty{color:var(--muted); font-style:italic; font-weight:400; font-size:13px;}
+  .m-name.bye-tag{color:var(--muted); font-style:italic; font-weight:400;}
+  .m-name.winner{color:var(--flame-2);}
+  .m-name.loser{opacity:.4; text-decoration:line-through;}
+  .m-name.clickable{cursor:pointer;}
+  .m-name.clickable:hover{text-decoration:underline;}
+  .m-vs{font-size:12px; color:var(--flame-2); font-weight:900; letter-spacing:.06em; flex-shrink:0;}
+
+  .final-col{justify-content:center;}
+  .champion-box{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:10px; min-width:210px; padding:0 12px; height:100%;
+  }
+  .trophy{font-size:32px;}
+  .champ-name{
+    font-size:15.5px; font-weight:900; color:var(--flame-2); text-align:center;
+    background:var(--card); padding:12px 16px; border-radius:8px; border:1px solid var(--flame-1);
+    min-height:20px; min-width:150px;
+  }
+  .champ-label{font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted);}
+
+  .footer-note{max-width:1600px; margin:20px auto 0; color:var(--muted); font-size:12px; text-align:center;}
+
+  .benched-panel{
+    max-width:1600px; margin:26px auto 0; background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:18px 22px;
+  }
+  .benched-head{
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px;
+  }
+  .benched-title{font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:800;}
+  .benched-count{
+    font-size:12.5px; color:var(--flame-2); background:#2a1f14; border:1px solid var(--flame-1);
+    padding:5px 12px; border-radius:999px; font-weight:800;
+  }
+  .chip-list{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    background:#20242c; border:1px solid var(--line); border-radius:8px; padding:6px 12px;
+    font-size:13px; color:var(--text);
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <h1>FF SOLO SHOWDOWN</h1>
+    <span>Sơ đồ bracket đấu loại trực tiếp</span>
+  </div>
+  <div class="actions">
+    <span class="live-badge">LIVE DRAW</span>
+    <button id="shuffleBtn">🔀 Random lại toàn bộ bracket</button>
+  </div>
+</div>
+
+<div class="scroll-wrap">
+  <div class="bracket-outer" id="bracketOuter">
+    <svg class="connectors" id="svgConnectors"></svg>
+    <div class="bracket" id="bracketRoot"></div>
+  </div>
+</div>
+
+<p class="footer-note">Bấm vào tên thí sinh ở mỗi trận để chọn người thắng — bracket tự đẩy người thắng lên nhánh kế tiếp.</p>
+
+<div class="benched-panel" id="benchedPanel"></div>
+
+<script>
+const players = [
+"Tuna","Người Tình Mùa Đông❄","Thái_Tu_Tiên⛩️","ndt…","Qbao","thẩn đào",
+"HarunaHanae","Loiwj","🌬Haxun🍭💤","Yizz","Chung","obi","NGỌC THANH","Nguyễn Minhh","Elfie",
+"{ Thanh -> PlaneT }","Gấu gấu","Taluc","Người đẹp thiếu ngủ","tbaoux","kyeaz",
+"bphuog","PhátNguyễn","Kid k17","kln0010","_vanhdzai_98943",
+"! Dylan","ngt0828","chiendz0145","dkhoidz02","yusi","L.D.P"
+];
+
+const CARD_SLOT = 120; // px height budget per round-1 match row
+
+let rounds = [];
+let benched = [];
+const ACTIVE_MATCHES = Math.floor(players.length / 2); // đưa hết thí sinh vào thi đấu, không ai bị dư
+
+function nextPow2(n){ let p=1; while(p<n) p*=2; return p; }
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function buildBracket(){
+  const neededPlayers = ACTIVE_MATCHES * 2;
+  const shuffledAll = shuffle(players);
+  const active = shuffledAll.slice(0, neededPlayers);
+  benched = shuffledAll.slice(neededPlayers);
+
+  rounds = [];
+  const r1 = [];
+  for(let i=0;i<active.length;i+=2){
+    r1.push({p1:active[i], p2:active[i+1], winner:null, srcA:null, srcB:null});
+  }
+  rounds.push(r1);
+
+  while(rounds[rounds.length-1].length > 1){
+    const prev = rounds[rounds.length-1];
+    const round = [];
+    let i = 0;
+    while(i < prev.length){
+      if(i+1 < prev.length){
+        round.push({p1:null, p2:null, winner:null, srcA:i, srcB:i+1});
+        i += 2;
+      } else {
+        round.push({p1:null, p2:'BYE', winner:null, srcA:i, srcB:null});
+        i += 1;
+      }
+    }
+    rounds.push(round);
+  }
+}
+
+function propagate(){
+  for(let r=1;r<rounds.length;r++){
+    const prev = rounds[r-1];
+    rounds[r].forEach((m)=>{
+      const a = prev[m.srcA];
+      m.p1 = a ? a.winner : null;
+      if(m.srcB !== null){
+        const b = prev[m.srcB];
+        m.p2 = b ? b.winner : null;
+      }
+      if(m.winner && m.winner!==m.p1 && m.winner!==m.p2) m.winner = null;
+    });
+  }
+}
+
+function roundNames(total){
+  const names = [];
+  for(let r=0;r<total;r++){
+    const remaining = total-r;
+    if(remaining===1) names.push("CHUNG KẾT");
+    else if(remaining===2) names.push("BÁN KẾT");
+    else if(remaining===3) names.push("TỨ KẾT");
+    else names.push(`VÒNG ${r+1}`);
+  }
+  return names;
+}
+
+function nameCell(m, name, rIdx, mIdx, slot, alignRight){
+  let cls = 'm-name' + (alignRight ? ' right' : '');
+  let clickable = false;
+  let label;
+
+  if(name === null){
+    cls += ' empty'; label = 'Chờ kết quả...';
+  } else if(name === 'BYE'){
+    cls += ' bye-tag'; label = 'BYE';
+  } else {
+    label = name;
+    const bothReal = m.p1 && m.p2 && m.p1!=='BYE' && m.p2!=='BYE';
+    const isByeMatch = (m.p1==='BYE' || m.p2==='BYE');
+    if(bothReal){
+      if(m.winner){ cls += (m.winner===name) ? ' winner' : ' loser'; }
+      else { clickable = true; cls += ' clickable'; }
+    } else if(isByeMatch){
+      if(m.winner){ cls += ' winner'; }
+      else { clickable = true; cls += ' clickable'; }
+    } else if(m.winner === name){
+      cls += ' winner';
+    }
+  }
+  const dataAttrs = clickable ? `data-round="${rIdx}" data-match="${mIdx}" data-slot="${slot}"` : '';
+  return `<span class="${cls}" title="${escapeHtml(label)}" ${dataAttrs}>${escapeHtml(label)}</span>`;
+}
+
+function render(){
+  const root = document.getElementById('bracketRoot');
+  root.innerHTML = '';
+  const total = rounds.length;
+  const names = roundNames(total);
+  const bracketHeight = rounds[0].length * CARD_SLOT;
+
+  rounds.forEach((round, rIdx)=>{
+    const col = document.createElement('div');
+    col.className = 'round-col';
+    col.dataset.roundIndex = rIdx;
+    col.style.height = bracketHeight + 'px';
+
+    const header = document.createElement('div');
+    header.className = 'round-header';
+    header.textContent = names[rIdx];
+    col.appendChild(header);
+
+    const matchesDiv = document.createElement('div');
+    matchesDiv.className = 'matches';
+
+    round.forEach((m, mIdx)=>{
+      const card = document.createElement('div');
+      card.className = 'match-card';
+      card.dataset.round = rIdx;
+      card.dataset.match = mIdx;
+      card.innerHTML = `
+        <div class="m-tag">TRẬN ${mIdx+1}</div>
+        <div class="m-duo">
+          ${nameCell(m, m.p1, rIdx, mIdx, 'p1', false)}
+          <span class="m-vs">VS</span>
+          ${nameCell(m, m.p2, rIdx, mIdx, 'p2', true)}
+        </div>
+      `;
+      matchesDiv.appendChild(card);
+    });
+
+    col.appendChild(matchesDiv);
+    root.appendChild(col);
+  });
+
+  const finalRound = rounds[rounds.length-1];
+  const champ = finalRound[0].winner;
+  const champCol = document.createElement('div');
+  champCol.className = 'round-col final-col';
+  champCol.style.height = bracketHeight + 'px';
+  champCol.innerHTML = `<div class="round-header">VÔ ĐỊCH</div>
+    <div class="champion-box" id="champBox">
+      <div class="trophy">🏆</div>
+      <div class="champ-name">${champ ? escapeHtml(champ) : '???'}</div>
+      <div class="champ-label">${champ ? 'Nhà vô địch' : 'Đang chờ kết quả'}</div>
+    </div>`;
+  root.appendChild(champCol);
+
+  root.querySelectorAll('.m-name.clickable').forEach(el=>{
+    el.addEventListener('click', onPick);
+  });
+
+  drawConnectors();
+  renderBenchedPanel();
+}
+
+function renderBenchedPanel(){
+  const el = document.getElementById('benchedPanel');
+  if(!el) return;
+  el.innerHTML = `
+    <div class="benched-head">
+      <span class="benched-title">Không thi đấu vòng này</span>
+      <span class="benched-count">${benched.length} người</span>
+    </div>
+    <div class="chip-list">
+      ${benched.map(n=>`<span class="chip">${escapeHtml(n)}</span>`).join('') || '<span class="chip">Không có ai bị dư</span>'}
+    </div>
+  `;
+}
+
+function onPick(e){
+  const el = e.currentTarget;
+  const rIdx = +el.dataset.round, mIdx = +el.dataset.match, slot = el.dataset.slot;
+  const m = rounds[rIdx][mIdx];
+  m.winner = m[slot];
+  propagate();
+  render();
+}
+
+function drawConnectors(){
+  const outer = document.getElementById('bracketOuter');
+  const svg = document.getElementById('svgConnectors');
+  const outerRect = outer.getBoundingClientRect();
+  svg.setAttribute('width', outer.scrollWidth);
+  svg.setAttribute('height', outer.scrollHeight);
+  svg.innerHTML = '';
+
+  const ns = 'http://www.w3.org/2000/svg';
+  function addLine(x1,y1,x2,y2){
+    const line = document.createElementNS(ns,'line');
+    line.setAttribute('x1',x1); line.setAttribute('y1',y1);
+    line.setAttribute('x2',x2); line.setAttribute('y2',y2);
+    line.setAttribute('stroke','#4a4f58');
+    line.setAttribute('stroke-width','1.5');
+    svg.appendChild(line);
+  }
+  function cardRect(rIdx, mIdx){
+    const el = document.querySelector(`.match-card[data-round="${rIdx}"][data-match="${mIdx}"]`);
+    if(!el) return null;
+    const r = el.getBoundingClientRect();
+    return {
+      left: r.left - outerRect.left, right: r.right - outerRect.left,
+      top: r.top - outerRect.top, bottom: r.bottom - outerRect.top,
+      cy: r.top - outerRect.top + r.height/2
+    };
+  }
+
+  for(let r=0; r<rounds.length-1; r++){
+    const nextRound = rounds[r+1];
+    nextRound.forEach((m, i)=>{
+      const t = cardRect(r+1, i);
+      if(!t) return;
+      const s0 = cardRect(r, m.srcA);
+      if(m.srcB !== null){
+        const s1 = cardRect(r, m.srcB);
+        if(!s0 || !s1) return;
+        const midX = s0.right + (t.left - s0.right)/2;
+        addLine(s0.right, s0.cy, midX, s0.cy);
+        addLine(s1.right, s1.cy, midX, s1.cy);
+        addLine(midX, s0.cy, midX, s1.cy);
+        const mergeY = (s0.cy + s1.cy)/2;
+        addLine(midX, mergeY, t.left, t.cy);
+      } else {
+        if(!s0) return;
+        const midX = s0.right + (t.left - s0.right)/2;
+        addLine(s0.right, s0.cy, midX, s0.cy);
+        addLine(midX, s0.cy, midX, t.cy);
+        addLine(midX, t.cy, t.left, t.cy);
+      }
+    });
+  }
+
+  // final -> champion box
+  const finalIdx = rounds.length-1;
+  const fRect = cardRect(finalIdx, 0);
+  const champBox = document.getElementById('champBox');
+  if(fRect && champBox){
+    const cRect = champBox.getBoundingClientRect();
+    const cLeft = cRect.left - outerRect.left;
+    const cCy = cRect.top - outerRect.top + cRect.height/2;
+    const midX = fRect.right + (cLeft - fRect.right)/2;
+    addLine(fRect.right, fRect.cy, midX, fRect.cy);
+    addLine(midX, fRect.cy, midX, cCy);
+    addLine(midX, cCy, cLeft, cCy);
+  }
+}
+
+document.getElementById('shuffleBtn').addEventListener('click', ()=>{
+  buildBracket();
+  render();
+});
+window.addEventListener('resize', ()=>drawConnectors());
+
+buildBracket();
+render();
+</script>
+</body>
+</html>
