@@ -140,54 +140,32 @@
 <div class="benched-panel" id="benchedPanel"></div>
 
 <script>
-const players = [
-"Tuna","Người Tình Mùa Đông❄","Thái_Tu_Tiên⛩️","ndt…","Qbao","thẩn đào",
-"HarunaHanae","Loiwj","🌬Haxun🍭💤","Yizz","Chung","obi","NGỌC THANH","Nguyễn Minhh","Elfie",
-"{ Thanh -> PlaneT }","Gấu gấu","Taluc","Người đẹp thiếu ngủ","tbaoux","kyeaz",
-"bphuog","PhátNguyễn","Kid k17","kln0010","_vanhdzai_98943",
-"! Dylan","ngt0828","chiendz0145","dkhoidz02","yusi","L.D.P"
+// Cặp đấu CỐ ĐỊNH — giữ nguyên thứ tự này, không random nữa
+const fixedPairs = [
+  ["Chung", "thẩn đào"],
+  ["NGỌC THANH", "HarunaHanae"],
+  ["Yizz", "bphuog"],
+  ["ndt…", "{ Thanh -> PlaneT }"],
+  ["Nguyễn Minhh", "Gấu gấu"],
+  ["Người Tình Mùa Đông❄", "_vanhdzai_98943"],
+  ["Loiwj", "! Dylan"],
+  ["🌬Haxun🍭💤", "kyeaz"],
+  ["dkhoidz02", "L.D.P"],
+  ["Người đẹp thiếu ngủ", "Elfie"],
+  ["Thái_Tu_Tiên⛩️", "Taluc"],
+  ["yusi", "obi"],
+  ["Tuna", "tbaoux"],
+  ["Kid k17", "kln0010"],
+  ["PhátNguyễn", "chiendz0145"],
+  ["Qbao", "ngt0828"]
 ];
 
 const CARD_SLOT = 120; // px height budget per round-1 match row
 
 let rounds = [];
-let benched = [];
-const ACTIVE_MATCHES = Math.floor(players.length / 2); // đưa hết thí sinh vào thi đấu, không ai bị dư
+let benched = []; // không ai bị dư — tất cả đều thi đấu
 
-function nextPow2(n){ let p=1; while(p<n) p*=2; return p; }
-function shuffle(arr){
-  const a=[...arr];
-  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
-  return a;
-}
 function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-
-const STORAGE_KEY = 'ffSoloShowdownBracketState_v1';
-
-// chữ ký danh sách người chơi hiện tại, dùng để phát hiện nếu list players thay đổi
-function playersSignature(){
-  return players.join('|');
-}
-
-function saveState(){
-  try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      signature: playersSignature(),
-      active: rounds[0].map(m => [m.p1, m.p2]).flat(),
-      benched: benched
-    }));
-  }catch(e){ /* localStorage không khả dụng thì thôi, bỏ qua */ }
-}
-
-function loadState(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return null;
-    const data = JSON.parse(raw);
-    if(!data || data.signature !== playersSignature()) return null;
-    return data;
-  }catch(e){ return null; }
-}
 
 function buildRoundsFromActive(active){
   rounds = [];
@@ -214,24 +192,10 @@ function buildRoundsFromActive(active){
   }
 }
 
-// forceReshuffle = true => luôn random mới và ghi đè state cũ
-function buildBracket(forceReshuffle){
-  if(!forceReshuffle){
-    const saved = loadState();
-    if(saved){
-      benched = saved.benched;
-      buildRoundsFromActive(saved.active);
-      return;
-    }
-  }
-
-  const neededPlayers = ACTIVE_MATCHES * 2;
-  const shuffledAll = shuffle(players);
-  const active = shuffledAll.slice(0, neededPlayers);
-  benched = shuffledAll.slice(neededPlayers);
-
+function buildBracket(){
+  const active = fixedPairs.flat();
+  benched = [];
   buildRoundsFromActive(active);
-  saveState();
 }
 
 function roundNames(total){
@@ -411,7 +375,7 @@ function drawConnectors(){
 
 window.addEventListener('resize', ()=>drawConnectors());
 
-buildBracket(false);
+buildBracket();
 render();
 </script>
 </body>
