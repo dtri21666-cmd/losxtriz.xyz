@@ -126,6 +126,7 @@
     <span>Sơ đồ bracket đấu loại trực tiếp</span>
   </div>
   <div class="actions">
+    <button id="reshuffleBtn">🔀 Random lại</button>
     <span class="live-badge">LIVE DRAW</span>
   </div>
 </div>
@@ -162,12 +163,34 @@ function shuffle(arr){
 }
 function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
-function buildBracket(){
-  const neededPlayers = ACTIVE_MATCHES * 2;
-  const shuffledAll = shuffle(players);
-  const active = shuffledAll.slice(0, neededPlayers);
-  benched = shuffledAll.slice(neededPlayers);
+const STORAGE_KEY = 'ffSoloShowdownBracketState_v1';
 
+// chữ ký danh sách người chơi hiện tại, dùng để phát hiện nếu list players thay đổi
+function playersSignature(){
+  return players.join('|');
+}
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      signature: playersSignature(),
+      active: rounds[0].map(m => [m.p1, m.p2]).flat(),
+      benched: benched
+    }));
+  }catch(e){ /* localStorage không khả dụng thì thôi, bỏ qua */ }
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    const data = JSON.parse(raw);
+    if(!data || data.signature !== playersSignature()) return null;
+    return data;
+  }catch(e){ return null; }
+}
+
+function buildRoundsFromActive(active){
   rounds = [];
   const r1 = [];
   for(let i=0;i<active.length;i+=2){
@@ -190,6 +213,26 @@ function buildBracket(){
     }
     rounds.push(round);
   }
+}
+
+// forceReshuffle = true => luôn random mới và ghi đè state cũ
+function buildBracket(forceReshuffle){
+  if(!forceReshuffle){
+    const saved = loadState();
+    if(saved){
+      benched = saved.benched;
+      buildRoundsFromActive(saved.active);
+      return;
+    }
+  }
+
+  const neededPlayers = ACTIVE_MATCHES * 2;
+  const shuffledAll = shuffle(players);
+  const active = shuffledAll.slice(0, neededPlayers);
+  benched = shuffledAll.slice(neededPlayers);
+
+  buildRoundsFromActive(active);
+  saveState();
 }
 
 function roundNames(total){
@@ -369,7 +412,14 @@ function drawConnectors(){
 
 window.addEventListener('resize', ()=>drawConnectors());
 
-buildBracket();
+document.getElementById('reshuffleBtn').addEventListener('click', ()=>{
+  if(confirm('Random lại toàn bộ sơ đồ bracket? Kết quả bốc thăm hiện tại sẽ bị thay thế.')){
+    buildBracket(true);
+    render();
+  }
+});
+
+buildBracket(false);
 render();
 </script>
 </body>
