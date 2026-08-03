@@ -160,6 +160,32 @@ const fixedPairs = [
   ["Qbao", "ngt0828"]
 ];
 
+// Tên tạm cho các vòng sau Vòng 1 — sửa trực tiếp tên vào đây khi có kết quả thật
+const vong2Placeholders = [   // Vòng 2 — 8 trận
+  ["Trùm Bất Động Sản", "NGỌC THANH"],
+  ["Yizz", "{ Thanh -> PlaneT }"],
+  ["Người Tình Mùa Đông❄", "Chờ Kết Quả"],
+  ["! Dylan", "Người 8"],
+  ["dkhoidz02", "Chờ Kết Quả"],
+  ["Yusi", "Thái_Tu_Tiên⛩️"],
+  ["Kid k17", "Tuna"],
+  ["Qbao", "chiendz0145"]
+];
+const tuKetPlaceholders = [   // Tứ kết — 4 trận
+  ["Người 17", "Người 18"],
+  ["Người 19", "Người 20"],
+  ["Người 21", "Người 22"],
+  ["QBao", "Người 24"]
+];
+const banKetPlaceholders = [  // Bán kết — 2 trận
+  ["Người 25", "Người 26"],
+  ["Người 27", "Người 28"]
+];
+const chungKetPlaceholders = [ // Chung kết — 1 trận
+  ["Người 29", "Người 30"]
+];
+const roundPlaceholders = [vong2Placeholders, tuKetPlaceholders, banKetPlaceholders, chungKetPlaceholders];
+
 const CARD_SLOT = 120; // px height budget per round-1 match row
 
 let rounds = [];
@@ -177,16 +203,19 @@ function buildRoundsFromActive(active){
 
   while(rounds[rounds.length-1].length > 1){
     const prev = rounds[rounds.length-1];
+    const ph = roundPlaceholders[rounds.length-1] || [];
     const round = [];
-    let i = 0;
+    let i = 0, mIdx = 0;
     while(i < prev.length){
       if(i+1 < prev.length){
-        round.push({p1:null, p2:null, winner:null, srcA:i, srcB:i+1});
+        const pair = ph[mIdx] || [null, null];
+        round.push({p1:pair[0], p2:pair[1], winner:null, srcA:i, srcB:i+1});
         i += 2;
       } else {
         round.push({p1:null, p2:'BYE', winner:null, srcA:i, srcB:null});
         i += 1;
       }
+      mIdx++;
     }
     rounds.push(round);
   }
